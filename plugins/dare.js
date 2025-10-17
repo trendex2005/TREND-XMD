@@ -1,23 +1,26 @@
-const fetch = require('node-fetch');
+import fetch from 'node-fetch';
 
-async function dareCommand(sock, chatId, message) {
-    try {
-        const shizokeys = 'knightbot';
-        const res = await fetch(`https://api.shizo.top/api/quote/dare?apikey=${shizokeys}`);
-        
-        if (!res.ok) {
-            throw await res.text();
+export default {
+    name: 'dare',
+    alias: ['truthordare', 'dareme'],
+    desc: 'Sends a random dare message',
+    category: 'fun',
+
+    async exec(sock, m, args, store) {
+        try {
+            const shizokeys = 'shizo';
+            const res = await fetch(`https://shizoapi.onrender.com/api/texts/dare?apikey=${shizokeys}`);
+            
+            if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+            
+            const json = await res.json();
+            const dareMessage = json.result || 'No dare found! Try again later.';
+
+            await sock.sendMessage(m.chat, { text: dareMessage }, { quoted: m });
+        } catch (error) {
+            console.error('❌ Dare Command Error:', error);
+            await sock.sendMessage(m.chat, { text: '❌ Failed to fetch dare. Please try again later!' }, { quoted: m });
         }
-        
-        const json = await res.json();
-        const dareMessage = json.result;
-
-        // Send the dare message
-        await sock.sendMessage(chatId, { text: dareMessage }, { quoted: message });
-    } catch (error) {
-        console.error('Error in dare command:', error);
-        await sock.sendMessage(chatId, { text: '❌ Failed to get dare. Please try again later!' }, { quoted: message });
     }
-}
-
-module.exports = { dareCommand };
+};
+export default dare;
